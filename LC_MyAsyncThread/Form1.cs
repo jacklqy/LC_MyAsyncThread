@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+/// <summary>
+/// 任何一个多线程在启动的时候都离不开委托的。
+/// </summary>
 namespace LC_MyAsyncThread
 {
     /// <summary>
@@ -40,6 +44,14 @@ namespace LC_MyAsyncThread
     ///     异步方法：发起调用，不等待完成，直接进入下一行，启动一个新线程来完成方法计算；
     /// 
     /// 启动多少个线程才算合理上线，怎么判断？大概的参考值：CPU核数*4
+    /// 
+    /// 1 Thread:线程等待，回调，前台线程/后台线程
+    /// 2 ThreadPool：线程池使用，设置线程池，ManualResetEvent
+    /// 3 扩展封装Thread&ThreadPool回调/等待
+    /// 4 Task：Waitall WaitAny Delay
+    /// 5 TaskFactory：ContinueWhenAny ContinueWhenAll
+    /// 6 并行运算Parallel.Invoke/For/Foreach
+    /// 
     /// </summary>
     public partial class Form1 : Form
     {
@@ -442,6 +454,263 @@ namespace LC_MyAsyncThread
         }
         #endregion
 
+        #region Task
+        /// <summary>
+        /// 1 Task：Waitall WaitAny Delay
+        /// 2 TaskFactory：ContinueWhenAny ContinueWhenAll</summary>
+        /// 3 并行运算Parallel.Invoke/For/Foreach
+        /// 
+        /// Task是.Net Framerwork3.0出现的。线程是基于线程池的，然后提供了丰富的API
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnTask_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"********************btnTask_Click Start" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+
+            ////task线程启动方式
+            //{
+            //    Task task = new Task(() => this.DoSomethingLong("btnTask_Click_1"));
+            //    task.Start();
+            //}
+            //{
+            //    Task task = Task.Run(() => this.DoSomethingLong("btnTask_Click_2"));
+            //}
+            //{
+            //    TaskFactory taskFactory = Task.Factory;
+            //    Task task = taskFactory.StartNew(() => this.DoSomethingLong("btnTask_Click_3"));
+            //}
+
+            //{
+            //    ThreadPool.SetMaxThreads(12,12);//线程池是单列的，全局唯一的，是对整个项目都生效的
+            //    //设置后，同时并发的task只有12个，而且是复用的，这就可以证明Task的线程是源于线程池的。
+            //    //全局的，请不要这样设置！！！
+            //    for (int i = 0; i < 100; i++)
+            //    {
+            //        int k = i;
+            //        Task.Run(() =>
+            //        {
+            //            Console.WriteLine($"This is {k} Runing. ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+            //            Thread.Sleep(200);
+            //        });
+            //    }
+            //    //假如说我想控制下Task的并发数量，该怎么做？
+            //}
+
+            //{
+            //    //Thread.Sleep和Task.Delay区别
+            //    {
+            //        Stopwatch stopwatch = new Stopwatch();
+            //        stopwatch.Start();
+            //        Console.WriteLine("在Sleep之前");
+            //        Thread.Sleep(2000);//同步等待--当前线程等待2s，然后继续，阻塞
+            //        Console.WriteLine("在Sleep之后");
+            //        stopwatch.Stop();
+            //        Console.WriteLine($"Sleep耗时：{stopwatch.ElapsedMilliseconds}");
+            //    }
+            //    {
+            //        //使用场景：如果我们想启动一个线程，但是又不想马上执行，又不想阻塞主线程，就可以使用Delay
+            //        Stopwatch stopwatch = new Stopwatch();
+            //        stopwatch.Start();
+            //        Console.WriteLine("在Delay之前");
+            //        Task task = Task.Delay(2000).ContinueWith(t => {
+            //            //Thread.Sleep(2000);//Task.Delay(2000)本质就是在延续任务里面等待了2s。
+            //            stopwatch.Stop();
+            //            Console.WriteLine($"Delay耗时：{stopwatch.ElapsedMilliseconds}");
+
+            //            Console.WriteLine($"This is ContinueWith. ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+            //        });//.Net Fromwork4.5出现的。异步等待--等待2s后启动一个线程执行任务，不是阻塞等待，而是在任务里面等。
+            //        Console.WriteLine("在Delay之后");
+            //    }
+            //}
+
+            {
+                //什么时候用多线程？任务能并发的时候
+                //多线程能干嘛？提升速度/优化用户体验
+                Console.WriteLine("XXX开启了一学期的课程");
+                this.Teach("Lesson1");
+                this.Teach("Lesson2");
+                this.Teach("Lesson3");//不能并发，因为有严格顺序，只有一个老师讲课，所以不符合并发场景
+                Console.WriteLine("部署一下项目实战工作，需要多人合作完成");//这里就可以多线程，开发可以多人合作，提升性能
+
+                TaskFactory taskFactory = new TaskFactory();
+                List<Task> taskList = new List<Task>();
+                taskList.Add(taskFactory.StartNew(o => this.Coding("组员1", "UI开发"),"参数1"));
+                taskList.Add(taskFactory.StartNew(o => this.Coding("组员2", "数据库设计"), "参数2"));
+                taskList.Add(taskFactory.StartNew(o => this.Coding("组员3", "项目框架搭建"), "参数3"));
+                taskList.Add(taskFactory.StartNew(o => this.Coding("组员4", "后台服务"), "参数4"));
+
+                {//阻塞
+                    ////阻塞当前线程，等着任意一个任务完成
+                    ////使用场景：列表页：核心数据可能来自数据库/远程接口/分布式搜索引擎/缓存，多线程并发请求，哪个先完成，就用哪个结果，其它的就不管了，WaitAny
+                    //Task.WaitAny(taskList.ToArray());//millisecondsTimeout也可以限时等待
+                    //Console.WriteLine("老师准备环境开始部署测试");
+
+                    ////需要能够等待全部线程完成任务后在继续，阻塞当前线程，等着全部任务完成
+                    ////使用场景：网站首页：A数据库 B接口 C分布式服务 D搜索引擎，这种情况就适合多线程并发，都完成后才能返回给用户，需要等待WaitAll
+                    //Task.WaitAll(taskList.ToArray());
+                    //Console.WriteLine("4个模块全部完成后，技术总监需要集中审查");
+
+                    ////Task.WaitAny/Task.WaitAll 都是阻塞当前线程，等待任务完成后执行操作
+                    ////阻塞卡界面，是为了并发以及顺序控制
+                    ////列表页：核心数据可能来自数据库/远程接口/分布式搜索引擎/缓存，多线程并发请求，哪个先完成，就用哪个结果，其它的就不管了，WaitAny
+                    ////网站首页：A数据库 B接口 C分布式服务 D搜索引擎，这种情况就适合多线程并发，都完成后才能返回给用户，需要等待WaitAll
+
+                }
+                {//非阻塞式的回调
+                    ////多个任务全部完成后，回调
+                    //taskFactory.ContinueWhenAll(taskList.ToArray(), tArray =>
+                    //{
+                    //    Console.WriteLine($"开发都完成了，大家一起庆祝一下 TaskId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                    //});
+                    ////任意一个任务完成后，回调
+                    //taskFactory.ContinueWhenAny(taskList.ToArray(), t =>
+                    //{
+                    //    Console.WriteLine($"{t.AsyncState}第一个开发完成，给你一个红包奖励 TaskId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                    //});
+
+                    ////ContinueWhenAll和ContinueWhenAny非阻塞式的回调，而且使用的线程可能是新线程，也可能是刚完成任务的线程，唯一不可能是主线程。
+                }
+                {//回调
+                    //Task.Run(() => this.DoSomethingLong("btnTask_Click")).ContinueWith(t =>
+                    //{
+                    //    Console.WriteLine($"btnTask_Click已完成_{Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                    //});//回调
+                }
+                {//获取返回值，阻塞
+                   //Task<int> iResult = Task.Run<int>(() =>
+                   // {
+                   //     Thread.Sleep(2000);
+                   //     return DateTime.Now.Year;
+                   // });
+                   // int i = iResult.Result;//会阻塞
+                }
+                {//获取返回值，并传入回调函数，非阻塞
+                    //Task.Run<int>(() =>
+                    //{
+                    //    Thread.Sleep(2000);
+                    //    return DateTime.Now.Year;
+                    //}).ContinueWith(tInt=> {
+                    //    int i = tInt.Result;
+                    //});
+                }
+                {
+                    ////假如说我想控制下Task的并发数量，该怎么做？线程最大不超过20个。使用Parallel是更好的解决方案！
+                    //List<Task> taskList1 = new List<Task>();
+                    //for (int i = 0; i < 10000; i++)
+                    //{
+                    //    if (taskList.Count(t => t.Status != TaskStatus.RanToCompletion) >= 20)
+                    //    {
+                    //        Task.WaitAny(taskList.ToArray());
+                    //        taskList = taskList.Where(t => t.Status != TaskStatus.RanToCompletion).ToList();
+                    //    }
+                    //    taskList1.Add(Task.Run(() =>
+                    //    {
+                    //        Console.WriteLine($"TaskId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                    //        Thread.Sleep(2000);
+                    //    }));
+                    //}
+
+                    //这种方式不可取
+                    //for (int i = 0; i < 10000; i++)
+                    //{
+                    //    Task.Run(() =>
+                    //    {
+                    //        Console.WriteLine($"TaskId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                    //        Thread.Sleep(2000);
+                    //    });
+                    //}
+                }
+
+            }
+
+            Console.WriteLine($"********************btnTask_Click End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+        #endregion
+
+        #region Parallel
+        private void btnParallel_Click(object sender, EventArgs e)
+        {
+            //假如说我想控制下Task的并发数量，该怎么做？
+            Console.WriteLine($"********************btnParallel_Click Start" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+
+            //Parallel.For和Parallel.Invoke和Parallel.ForEach效果一样
+            //Parallel并发执行多个Action 多线程的，主线程也会参与计算--阻塞界面
+            //等于TaskWaitAll+主线程计算
+
+            ParallelOptions options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = 3;
+
+            {
+                //未控制并发数量--阻塞
+                Parallel.Invoke(
+                    () => this.DoSomethingLong("btnParallel_Click1"),
+                    () => this.DoSomethingLong("btnParallel_Click2"),
+                    () => this.DoSomethingLong("btnParallel_Click3"),
+                    () => this.DoSomethingLong("btnParallel_Click4"),
+                    () => this.DoSomethingLong("btnParallel_Click5"));
+
+                //已控制并发数量--阻塞
+                Parallel.Invoke(options,
+                    () => this.DoSomethingLong("btnParallel_Click1"),
+                    () => this.DoSomethingLong("btnParallel_Click2"),
+                    () => this.DoSomethingLong("btnParallel_Click3"),
+                    () => this.DoSomethingLong("btnParallel_Click4"),
+                    () => this.DoSomethingLong("btnParallel_Click5"));
+            }
+            {
+                //未控制并发数量--阻塞
+                Parallel.For(0, 5, i =>
+                {
+                    this.DoSomethingLong($"btnParallel_Click_{i}");
+                });
+                //已控制并发数量--阻塞
+                Parallel.For(0, 10, options, i =>
+                {
+                    this.DoSomethingLong($"btnParallel_Click_{i}");
+                });
+            }
+            {
+                //未控制并发数量--阻塞
+                Parallel.ForEach(new List<string>() { "111", "222", "333" }, str =>
+                   {
+                       this.DoSomethingLong($"btnParallel_Click_{str}");
+                   });
+                //已控制并发数量--阻塞
+                Parallel.ForEach(new List<string>() { "111", "222", "333" }, options, str =>
+                 {
+                     this.DoSomethingLong($"btnParallel_Click_{str}");
+                 });
+            }
+            {
+                //有没有办法不阻塞？包一层
+                Task.Run(() =>
+                {
+                    //已控制并发数量
+                    Parallel.ForEach(new List<string>() { "111", "222", "333" }, options, str =>
+                    {
+                        this.DoSomethingLong($"btnParallel_Click_{str}");
+                    });
+                });
+                //Parallel线程取消停止
+            }
+
+            //几乎90%以上的多线程场景，以及顺序控制，以上的Task方法就可以完成，如果你的线程场景太复杂搞不定，那么请梳理一下你的流程，简化一下。
+            //建议最好不要线程嵌套线程，两层勉强能懂，三次hold不住了，更多只能求神
+
+            Console.WriteLine($"********************btnParallel_Click End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        } 
+        #endregion
+
         private void DoSomethingLong(string name)
         {
             Console.WriteLine($"********************DoSomethingLong Start {name}" +
@@ -458,5 +727,35 @@ namespace LC_MyAsyncThread
               $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
               $"************************");
         }
+
+        private void Teach(string lesson)
+        {
+            Console.WriteLine($"{lesson}开始讲。。。");
+            long iResult = 0;
+            //打开任务管理器查看CPU利用率对比同步和异步cpu利用率情况
+            for (int i = 0; i < 1000_000_000; i++)
+            {
+                iResult += i;
+            }
+            Console.WriteLine($"{lesson}讲完啦。。。");
+        }
+
+        private void Coding(string name,string projectName)
+        {
+            Console.WriteLine($"********************Coding Start {name} {projectName}" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+            long iResult = 0;
+            //打开任务管理器查看CPU利用率对比同步和异步cpu利用率情况
+            for (int i = 0; i < 1000_000_000; i++)
+            {
+                iResult += i;
+            }
+            //Thread.Sleep(2000);
+            Console.WriteLine($"********************Coding End {name} {projectName}" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+
     }
 }
