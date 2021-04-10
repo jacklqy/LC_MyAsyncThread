@@ -8,3 +8,13 @@ G:\test\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.csproj.Gene
 G:\test\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.csproj.CoreCompileInputs.cache
 G:\test\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.exe
 G:\test\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.pdb
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\bin\Debug\LC_MyAsyncThread.exe.config
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\bin\Debug\LC_MyAsyncThread.exe
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\bin\Debug\LC_MyAsyncThread.pdb
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.csprojAssemblyReference.cache
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.Form1.resources
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.Properties.Resources.resources
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.csproj.GenerateResource.cache
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.csproj.CoreCompileInputs.cache
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.exe
+G:\github\LC_MyAsyncThread\LC_MyAsyncThread\obj\Debug\LC_MyAsyncThread.pdb
