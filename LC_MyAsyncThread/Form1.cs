@@ -872,7 +872,8 @@ namespace LC_MyAsyncThread
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"This is {name}被取消 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                                    Console.WriteLine($"This is {name}中途停止 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                                    return;//
                                 }
                             }
                             catch (Exception ex)
