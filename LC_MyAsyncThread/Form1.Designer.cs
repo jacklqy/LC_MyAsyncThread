@@ -36,6 +36,11 @@ namespace LC_MyAsyncThread
             this.btnThreadPool = new System.Windows.Forms.Button();
             this.btnTask = new System.Windows.Forms.Button();
             this.btnParallel = new System.Windows.Forms.Button();
+            this.btnException = new System.Windows.Forms.Button();
+            this.btnCancel = new System.Windows.Forms.Button();
+            this.btnVariable = new System.Windows.Forms.Button();
+            this.button4 = new System.Windows.Forms.Button();
+            this.btnLock = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnSync
@@ -92,9 +97,9 @@ namespace LC_MyAsyncThread
             // 
             this.btnTask.Location = new System.Drawing.Point(267, 24);
             this.btnTask.Name = "btnTask";
-            this.btnTask.Size = new System.Drawing.Size(75, 23);
+            this.btnTask.Size = new System.Drawing.Size(121, 23);
             this.btnTask.TabIndex = 5;
-            this.btnTask.Text = "Task";
+            this.btnTask.Text = "Task/TaskFactory";
             this.btnTask.UseVisualStyleBackColor = true;
             this.btnTask.Click += new System.EventHandler(this.btnTask_Click);
             // 
@@ -108,11 +113,65 @@ namespace LC_MyAsyncThread
             this.btnParallel.UseVisualStyleBackColor = true;
             this.btnParallel.Click += new System.EventHandler(this.btnParallel_Click);
             // 
+            // btnException
+            // 
+            this.btnException.Location = new System.Drawing.Point(427, 24);
+            this.btnException.Name = "btnException";
+            this.btnException.Size = new System.Drawing.Size(115, 23);
+            this.btnException.TabIndex = 7;
+            this.btnException.Text = "多线程异常处理";
+            this.btnException.UseVisualStyleBackColor = true;
+            this.btnException.Click += new System.EventHandler(this.btnException_Click);
+            // 
+            // btnCancel
+            // 
+            this.btnCancel.Location = new System.Drawing.Point(427, 69);
+            this.btnCancel.Name = "btnCancel";
+            this.btnCancel.Size = new System.Drawing.Size(75, 23);
+            this.btnCancel.TabIndex = 8;
+            this.btnCancel.Text = "线程取消";
+            this.btnCancel.UseVisualStyleBackColor = true;
+            this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
+            // 
+            // btnVariable
+            // 
+            this.btnVariable.Location = new System.Drawing.Point(427, 118);
+            this.btnVariable.Name = "btnVariable";
+            this.btnVariable.Size = new System.Drawing.Size(75, 23);
+            this.btnVariable.TabIndex = 9;
+            this.btnVariable.Text = "临时变量";
+            this.btnVariable.UseVisualStyleBackColor = true;
+            this.btnVariable.Click += new System.EventHandler(this.btnVariable_Click);
+            // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(584, 24);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(99, 23);
+            this.button4.TabIndex = 10;
+            this.button4.Text = "async/await";
+            this.button4.UseVisualStyleBackColor = true;
+            // 
+            // btnLock
+            // 
+            this.btnLock.Location = new System.Drawing.Point(427, 166);
+            this.btnLock.Name = "btnLock";
+            this.btnLock.Size = new System.Drawing.Size(115, 23);
+            this.btnLock.TabIndex = 11;
+            this.btnLock.Text = "线程安全/lock";
+            this.btnLock.UseVisualStyleBackColor = true;
+            this.btnLock.Click += new System.EventHandler(this.btnLock_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(485, 289);
+            this.ClientSize = new System.Drawing.Size(715, 289);
+            this.Controls.Add(this.btnLock);
+            this.Controls.Add(this.button4);
+            this.Controls.Add(this.btnVariable);
+            this.Controls.Add(this.btnCancel);
+            this.Controls.Add(this.btnException);
             this.Controls.Add(this.btnParallel);
             this.Controls.Add(this.btnTask);
             this.Controls.Add(this.btnThreadPool);
@@ -135,6 +194,11 @@ namespace LC_MyAsyncThread
         private System.Windows.Forms.Button btnThreadPool;
         private System.Windows.Forms.Button btnTask;
         private System.Windows.Forms.Button btnParallel;
+        private System.Windows.Forms.Button btnException;
+        private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnVariable;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button btnLock;
     }
 }
 

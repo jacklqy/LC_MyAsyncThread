@@ -48,9 +48,15 @@ namespace LC_MyAsyncThread
     /// 1 Thread:线程等待，回调，前台线程/后台线程
     /// 2 ThreadPool：线程池使用，设置线程池，ManualResetEvent
     /// 3 扩展封装Thread&ThreadPool回调/等待
-    /// 4 Task：Waitall WaitAny Delay
+    /// 4 Task(多线程的最佳实践)：Waitall WaitAny Delay
     /// 5 TaskFactory：ContinueWhenAny ContinueWhenAll
     /// 6 并行运算Parallel.Invoke/For/Foreach
+    /// 
+    /// 
+    /// 1 多异常处理和线程取消
+    /// 2 多线程的临时变量
+    /// 3 线程安全和锁lock
+    /// 4 async/await
     /// 
     /// </summary>
     public partial class Form1 : Form
@@ -708,9 +714,354 @@ namespace LC_MyAsyncThread
             Console.WriteLine($"********************btnParallel_Click End" +
               $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
               $"************************");
-        } 
+        }
         #endregion
 
+        #region 多线程异常处理
+        private void btnException_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"********************btnException_Click Start" +
+            $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+            $"************************");
+
+            //{
+            //    try
+            //    {
+            //        //这种方式就是Task.WaitAll全部线程执行完后在捕获异常，根据自己实际业务场景选择把，如果不需要对某个线程异常后，做通知其它线程取消等操作，就可以使用这种方式
+            //        List<Task> taskList = new List<Task>();
+            //        for (int i = 0; i < 100; i++)
+            //        {
+            //            string name = $"btnException_Click_{i}";//临时变量
+            //            taskList.Add(Task.Run(() =>
+            //            {
+            //                if (name.Equals("btnException_Click_11"))
+            //                {
+            //                    throw new Exception("btnException_Click_11异常");
+            //                }
+            //                else if (name.Equals("btnException_Click_12"))
+            //                {
+            //                    throw new Exception("btnException_Click_12异常");
+            //                }
+            //                else if (name.Equals("btnException_Click_38"))
+            //                {
+            //                    throw new Exception("btnException_Click_38异常");
+            //                }
+            //                Console.WriteLine($"This is {name}成功 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+            //            }));
+            //        }
+            //        //多线程里面抛出的异常，只会终结当前线程；不会影响别的线程；
+            //        //那线程异常哪里去了？被吞了，
+            //        //假如我想获取异常信息，还需要通知别的线程
+            //        Task.WaitAll(taskList.ToArray());//1 可以捕获线程异常
+            //    }
+            //    catch(AggregateException aex)//2 需要try-catch-AggregateException
+            //    {
+            //        //AggregateException专门用于捕获多线程的异常
+            //        foreach (var exception in aex.InnerExceptions)
+            //        {
+            //            Console.WriteLine(exception.Message);
+            //        }
+            //    }
+            //    catch (Exception ex)//可以多catch，先匹配具体异常，如果为捕获在全部捕获
+            //    {
+            //        Console.WriteLine(ex);
+            //    }
+            //}
+
+            {
+                //线程异常后经常是需要通知别的线程，而不是等到WaitAll全部执行完，问题就是要线程取消
+                //工作中常规建议：多线程的委托里面不允许异常，包一层try-catch，然后记录下来异常信息，完成需要的操作
+
+                List<Task> taskList = new List<Task>();
+                for (int i = 0; i < 100; i++)
+                {
+                    string name = $"btnException_Click_{i}";//临时变量
+                    taskList.Add(Task.Run(() =>
+                    {
+                        //正确做法是在线程里面包一层try-catch，而不是等到Task.WaitAll全部线程执行完了在做响应处理
+                        //因为这样做就可以在其中某个线程执行异常后，可以及时做一些其他额外操作，比如通知其它线程取消等...
+                        try
+                        {
+                            if (name.Equals("btnException_Click_11"))
+                            {
+                                throw new Exception("btnException_Click_11异常");
+                            }
+                            else if (name.Equals("btnException_Click_12"))
+                            {
+                                throw new Exception("btnException_Click_12异常");
+                            }
+                            else if (name.Equals("btnException_Click_38"))
+                            {
+                                throw new Exception("btnException_Click_38异常");
+                            }
+                            Console.WriteLine($"This is {name}成功 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                        }
+                    }));
+                }
+                Task.WaitAll(taskList.ToArray());
+
+            }
+
+            Console.WriteLine($"********************btnException_Click End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+        #endregion
+
+        #region 线程取消(标准做法)
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"********************btnCancel_Click Start" +
+            $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+            $"************************");
+
+            {
+                //多线程并发任务，某个线程失败后，我们希望通知别的线程，都停下来，怎么做呢？如果有部分线程还没有启动，能不能就不启动了呢？
+                //Thread.Abort--终止线程：原理是向当前线程抛一个异常来终结任务；
+                //线程属于操作系统(OS)资源，可能不会立即停下来，因为当我们向操作系统发送一个请求要求停止线程时，最终需要操作系统的CPU响应，我们不知道CPU什么时候能接受到这个异常请求，就不知道什么时候能终止，
+                //还有可能就是当前向操作系统发送取消线程操作时，可能这个线程已经被操作系统的CPU执行完了。
+                //这方式就是无法掌控的不精准的，所以就不是很靠谱，不建议这么做。
+                //所以多线程不是我们想象的这么简单，想暂停就暂停，先重启就重启，想终止就终止，这个都是需要操作系统调度的，时间是不能确定的，是由操作系统决定什么时候执行的。
+
+                //Task不能外部终止任务，没有这种api，只能自己终止自己(上帝才能打败自己)，在线程内部！！！
+
+                //非标准做法：共享变量var isOk=true;
+                //标准做法：CancellationTokenSource里面有个IsCancellationRequested属性默认false，调用Cancel方法后变成true(不能在变回去)，可以重复Cancel
+                //步骤：1准备CancellationTokenSource 2try-catch-Cancel 3Action里面要随时判断IsCancellationRequested
+                //尽快取消，肯定有延迟，在判断环节才会结束
+
+                try
+                {
+                    CancellationTokenSource cts = new CancellationTokenSource();
+                    List<Task> taskList = new List<Task>();
+                    for (int i = 0; i < 50; i++)
+                    {
+                        string name = $"btnException_Click_{i}";//临时变量
+                        taskList.Add(Task.Run(() =>
+                        {
+                            try
+                            {
+                                if (!cts.IsCancellationRequested)
+                                    Console.WriteLine($"This is {name}开始 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+
+                                Thread.Sleep(new Random().Next(50, 100));//建议在这里sleep一下
+
+                                if (name.Equals("btnException_Click_11"))
+                                {
+                                    //异常取消
+                                    throw new Exception("btnException_Click_11异常");
+                                }
+                                else if (name.Equals("btnException_Click_12"))
+                                {
+                                    //异常取消
+                                    throw new Exception("btnException_Click_12异常");
+                                }
+                                else if (name.Equals("btnException_Click_13"))
+                                {
+                                    //符合某种条件取消
+                                    cts.Cancel();
+                                }
+
+                                if (!cts.IsCancellationRequested)//业务核心环节判断是否需要继续
+                                {
+                                    Console.WriteLine($"This is {name}结束 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"This is {name}被取消 ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                cts.Cancel();
+                            }
+                        }, cts.Token)); //启动线程是传递cts.Token，一旦我们调用了cts.Cancel()方法，那么cts.Token就会抛一个cts.Token.ThrowIfCancellationRequested异常，终止还没有启动的线程，他们就不会启动了。
+                    }
+                    Task.WaitAll(taskList.ToArray());
+                    //如果有部分线程还没有启动，能不能就不启动了呢？
+                    //1 启动线程传递Token 2 异常抓取 
+                    //在Cancel时还没有启动的任务，就不启动了，也是抛异常cts.Token.ThrowIfCancellationRequested
+                }
+                catch (AggregateException aex)
+                {
+                    foreach (var exception in aex.InnerExceptions)
+                    {
+                        Console.WriteLine(exception.Message);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            Console.WriteLine($"********************btnCancel_Click End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+        #endregion
+
+        #region 临时变量
+        private void btnVariable_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"********************btnVariable_Click Start" +
+            $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+            $"************************");
+
+            //for (int i = 0; i < 5; i++)
+            //{
+            //    Task.Run(() =>
+            //    {
+            //        Console.WriteLine($"This is btnVariable_Click_{i} ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+            //    });
+            //}
+
+            //临时变量问题，线程是非阻塞的，飞快的创建了5个线程，然后线程又是延迟启动的，等着线程去执行的时候，i已经是5了，
+            //k是闭包里面的变量，每次循环都有一个独立的k。
+            //注意：类似这样的用法不光是多线程里面有，比如有时候用for/foreach=》创建委托，但是委托占时没有执行，然后把委托传递给别人了，但是在后面又把这个委托给修改了，如果委托把变量带走了，包括那个时候的变量，有可能就有问题。
+            for (int i = 0; i < 5; i++)//i只有一个，在栈里面只有1个
+            {
+                int k = i;//k每次都是一个全新的变量，在内存栈中有5个。
+                Task.Run(() =>
+                {
+                    Console.WriteLine($"This is btnVariable_Click_{i}_{k} ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
+                });
+            }
+
+            Console.WriteLine($"********************btnVariable_Click End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+        #endregion
+
+        #region 线程安全&lock
+        private void btnLock_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"********************btnLock_Click Start" +
+           $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+           $"************************");
+
+            //线程安全：如果你的代码在进程中有多个线程同时运行这一段，如果每次运行的结果都跟单线程运行的结果一致，那么就是线程安全的。
+            //线程安全问题一般都是有全局变量/共享变量/静态变量/硬盘文件/数据库的值，只要多线程都能访问和修改
+
+            {
+                ////同步阻塞操作
+                //for (int i = 0; i < 10000; i++)
+                //{
+                //    this.iNumSync++;
+                //}
+                ////异步多线程非阻塞操作(非线程安全)
+                //for (int i = 0; i < 10000; i++)
+                //{
+                //    Task.Run(() =>
+                //    {
+                //        this.iNumAsync++;
+                //    });
+                //}
+                ////异步多线程非阻塞操作(非线程安全)
+                //for (int i = 0; i < 10000; i++)
+                //{
+                //    int k = i;
+                //    Task.Run(() =>
+                //    {
+                //        this.iListAsync.Add(k);
+                //    });
+                //}
+                //Thread.Sleep(5 * 1000);
+                //Console.WriteLine($"iNumSync={iNumSync};iNumAsync={iNumAsync};iListAsync={iListAsync.Count}");
+            }
+
+            //多个线程同时操作内存，导致覆盖问题。怎么解决？
+            {
+                {
+                    //1 lock(不推荐)：lock是语法糖，Monitor.Enter占据一个引用，别的线程就只能等着，建议lock里面的代码不要太多。这里是单线程。
+                    //推荐锁是private static readonly object，不能是null；也不应该是string(string会享元模式)
+                    {
+                        for (int i = 0; i < 10000; i++)
+                        {
+                            Task.Run(() =>
+                            {
+                                lock (_lock)//任意时候只有一个线程进入方法块，这不就变成了单线程
+                                {
+                                    this.iNumAsync++;
+                                }
+                            });
+                        }
+                        Thread.Sleep(5 * 1000);
+                        Console.WriteLine($"iNumSync={iNumSync};iNumAsync={iNumAsync};iListAsync={iListAsync.Count}");
+                    }
+
+                    ////lock(this)，外面如果也要用实例，就冲突了
+                    //{
+                    //    Test test = new Test();
+                    //    Task.Delay(1000).ContinueWith(t =>
+                    //    {
+                    //        lock (test)
+                    //        {
+                    //            Console.WriteLine("*************start************");
+                    //            Thread.Sleep(5000);
+                    //            Console.WriteLine("*************end************");
+                    //        }
+                    //    });
+                    //    test.DoTest();
+                    //    //this和test是同一个对象，会导致冲突，排队问题。string也是相同问题。
+                    //}
+                }
+                {
+                    //2 线程安全集合：System.Collections.Concurrent这个命名空间下的集合。保证集合操作的原子性
+                    //比如：System.Collections.Concurrent.ConcurrentQueue<int>
+                }
+                {
+                    //3 数据分拆(推荐)：避免多线程操作同一个数据；既安全又高效。需要在一定场景下应用。否则就考虑lock
+                    //比如有100个任务需要处理，开了10个线程去处理，我们加锁又会影响性能，那就拆分，1-10个任务给一个线程，10-20任务给一个线程，以此类推，大家各搞各的，互不影响，操作完成后在合并。
+                }
+            }
+
+            Console.WriteLine($"********************btnLock_Click End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+        //标准lock锁写法
+        private static readonly object _lock = new object();
+
+        private int iNumSync = 0;//同步的变量字段
+        private int iNumAsync = 0;//异步的变量字段，非线程安全
+        private List<int> iListAsync = new List<int>();//异步的集合，非线程安全
+        /// <summary>
+        /// 为了搞清楚this和实例对象锁的测试
+        /// </summary>
+        public class Test
+        {
+            /// <summary>
+            /// 这是非常经典的一个面试题
+            /// </summary>
+            public void DoTest()
+            {
+                lock (this)//递归调用lock this会不会死锁？不会死锁，但是会死循环，是不是很奇怪。（因为这里是同一个线程，这个引用就是被这个线程所占据。锁是排他，不是排自己！）
+                {
+                    Thread.Sleep(500);
+                    this.iDoTestNum++;
+                    if (DateTime.Now.Day < 12 && this.iDoTestNum < 10)
+                    {
+                        Console.WriteLine($"This is {DateTime.Now.Day};i={this.iDoTestNum}");
+                        this.DoTest();
+                    }
+                    else
+                    {
+                        Console.WriteLine("11号结束啦");
+                    }
+                }
+            }
+            private int iDoTestNum = 0;
+        }
+        #endregion
+
+        #region private
         private void DoSomethingLong(string name)
         {
             Console.WriteLine($"********************DoSomethingLong Start {name}" +
@@ -740,7 +1091,7 @@ namespace LC_MyAsyncThread
             Console.WriteLine($"{lesson}讲完啦。。。");
         }
 
-        private void Coding(string name,string projectName)
+        private void Coding(string name, string projectName)
         {
             Console.WriteLine($"********************Coding Start {name} {projectName}" +
               $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
@@ -757,5 +1108,8 @@ namespace LC_MyAsyncThread
               $"************************");
         }
 
+        #endregion
+
+        
     }
 }
