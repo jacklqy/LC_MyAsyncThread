@@ -5,6 +5,10 @@ VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LC_MyAsyncThread", "LC_MyAsyncThread\LC_MyAsyncThread.csproj", "{4DD9C833-1262-476B-9AF0-E250A90EB8E9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwaitAsyncLibrary", "AwaitAsyncLibrary\AwaitAsyncLibrary.csproj", "{C29CCDEC-83EB-4AD4-9208-7032D59D398A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LC_MyAwaitAsyncConsole", "LC_MyAwaitAsyncConsole\LC_MyAwaitAsyncConsole.csproj", "{258EA054-B458-46A3-A8D3-6C95768C92A8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{4DD9C833-1262-476B-9AF0-E250A90EB8E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DD9C833-1262-476B-9AF0-E250A90EB8E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DD9C833-1262-476B-9AF0-E250A90EB8E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C29CCDEC-83EB-4AD4-9208-7032D59D398A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C29CCDEC-83EB-4AD4-9208-7032D59D398A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C29CCDEC-83EB-4AD4-9208-7032D59D398A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C29CCDEC-83EB-4AD4-9208-7032D59D398A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{258EA054-B458-46A3-A8D3-6C95768C92A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{258EA054-B458-46A3-A8D3-6C95768C92A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{258EA054-B458-46A3-A8D3-6C95768C92A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{258EA054-B458-46A3-A8D3-6C95768C92A8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

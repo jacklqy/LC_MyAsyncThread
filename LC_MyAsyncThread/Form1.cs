@@ -1062,6 +1062,21 @@ namespace LC_MyAsyncThread
         }
         #endregion
 
+        #region async/await(不推荐在winform使用，有时候会出现一些莫名其妙的问题，很难解释通)
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine($"********************async/await Start" +
+            $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+            $"************************");
+
+            MessageBox.Show("不推荐在winform使用，有时候会出现一些莫名其妙的问题，很难解释通。请移步【MVC项目】和【控制台应用程序】查看测试demo！！！");
+
+            Console.WriteLine($"********************async/await End" +
+              $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
+              $"************************");
+        }
+        #endregion
+
         #region private
         private void DoSomethingLong(string name)
         {
@@ -1108,6 +1123,7 @@ namespace LC_MyAsyncThread
               $" {Thread.CurrentThread.ManagedThreadId.ToString("00")} {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}" +
               $"************************");
         }
+
 
         #endregion
 
