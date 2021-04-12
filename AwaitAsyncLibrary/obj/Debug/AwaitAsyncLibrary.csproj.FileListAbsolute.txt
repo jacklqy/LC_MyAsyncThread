@@ -1,0 +1,6 @@
+D:\github\LC_MyAsyncThread\AwaitAsyncLibrary\bin\Debug\AwaitAsyncLibrary.dll
+D:\github\LC_MyAsyncThread\AwaitAsyncLibrary\bin\Debug\AwaitAsyncLibrary.pdb
+D:\github\LC_MyAsyncThread\AwaitAsyncLibrary\obj\Debug\AwaitAsyncLibrary.csprojAssemblyReference.cache
+D:\github\LC_MyAsyncThread\AwaitAsyncLibrary\obj\Debug\AwaitAsyncLibrary.csproj.CoreCompileInputs.cache
+D:\github\LC_MyAsyncThread\AwaitAsyncLibrary\obj\Debug\AwaitAsyncLibrary.dll
+D:\github\LC_MyAsyncThread\AwaitAsyncLibrary\obj\Debug\AwaitAsyncLibrary.pdb

@@ -1,0 +1,10 @@
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\bin\Debug\LC_MyAwaitAsyncConsole.exe.config
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\bin\Debug\LC_MyAwaitAsyncConsole.exe
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\bin\Debug\LC_MyAwaitAsyncConsole.pdb
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\bin\Debug\AwaitAsyncLibrary.dll
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\bin\Debug\AwaitAsyncLibrary.pdb
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\obj\Debug\LC_MyAwaitAsyncConsole.csprojAssemblyReference.cache
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\obj\Debug\LC_MyAwaitAsyncConsole.csproj.CoreCompileInputs.cache
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\obj\Debug\LC_MyAwaitAsyncConsole.csproj.CopyComplete
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\obj\Debug\LC_MyAwaitAsyncConsole.exe
+D:\github\LC_MyAsyncThread\LC_MyAwaitAsyncConsole\obj\Debug\LC_MyAwaitAsyncConsole.pdb

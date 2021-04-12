@@ -49,5 +49,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AwaitAsyncLibrary\AwaitAsyncLibrary.csproj">
+      <Project>{c29ccdec-83eb-4ad4-9208-7032d59d398a}</Project>
+      <Name>AwaitAsyncLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
