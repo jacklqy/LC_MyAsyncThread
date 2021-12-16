@@ -536,7 +536,7 @@ namespace LC_MyAsyncThread
             {
                 //什么时候用多线程？任务能并发的时候
                 //多线程能干嘛？提升速度/优化用户体验
-                Console.WriteLine("XXX开启了一学期的课程");
+                Console.WriteLine("XXX开启了");
                 this.Teach("Lesson1");
                 this.Teach("Lesson2");
                 this.Teach("Lesson3");//不能并发，因为有严格顺序，只有一个老师讲课，所以不符合并发场景
@@ -566,7 +566,10 @@ namespace LC_MyAsyncThread
                     ////网站首页：A数据库 B接口 C分布式服务 D搜索引擎，这种情况就适合多线程并发，都完成后才能返回给用户，需要等待WaitAll
 
                 }
-                {//非阻塞式的回调
+
+                //******************************************常用****************************************
+                {
+                    //非阻塞式的回调
                     ////多个任务全部完成后，回调
                     //taskFactory.ContinueWhenAll(taskList.ToArray(), tArray =>
                     //{
@@ -577,9 +580,10 @@ namespace LC_MyAsyncThread
                     //{
                     //    Console.WriteLine($"{t.AsyncState}第一个开发完成，给你一个红包奖励 TaskId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
                     //});
-
                     ////ContinueWhenAll和ContinueWhenAny非阻塞式的回调，而且使用的线程可能是新线程，也可能是刚完成任务的线程，唯一不可能是主线程。
                 }
+                //******************************************常用****************************************
+
                 {//回调
                     //Task.Run(() => this.DoSomethingLong("btnTask_Click")).ContinueWith(t =>
                     //{
@@ -921,6 +925,8 @@ namespace LC_MyAsyncThread
             //        Console.WriteLine($"This is btnVariable_Click_{i} ThreadId={Thread.CurrentThread.ManagedThreadId.ToString("00")}");
             //    });
             //}
+
+            //声明变量时堆栈存储、闭包不仅仅是在js中体现，在c#中也是同样的道理，C#委托里面对方法外部的变量引用就和js里面的闭包一样。
 
             //临时变量问题，线程是非阻塞的，飞快的创建了5个线程，然后线程又是延迟启动的，等着线程去执行的时候，i已经是5了，
             //k是闭包里面的变量，每次循环都有一个独立的k。
